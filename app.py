@@ -5,6 +5,8 @@ import numpy as np
 from xgboost import XGBRegressor
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
+pio.templates.default = "plotly_white"
 
 # --------------------------------------------------
 # PAGE CONFIGURATION
@@ -220,6 +222,28 @@ div[data-testid="stMetricValue"] {
 [data-testid="stAppViewContainer"] [data-testid="stCaptionContainer"] {
     color: #52685B !important;
     opacity: 1 !important;
+}
+
+/* Fix headings rendered by Streamlit */
+[data-testid="stHeading"],
+[data-testid="stHeading"] *,
+.stApp h1,
+.stApp h2,
+.stApp h3 {
+    color: #173B2B !important;
+    opacity: 1 !important;
+}
+
+/* Keep headings inside bordered cards visible */
+[data-testid="stVerticalBlockBorderWrapper"] h1,
+[data-testid="stVerticalBlockBorderWrapper"] h2,
+[data-testid="stVerticalBlockBorderWrapper"] h3 {
+    color: #173B2B !important;
+}
+
+/* Consistent light background for chart containers */
+[data-testid="stPlotlyChart"] {
+    background-color: #F7F9F7 !important;
 }
 
 
