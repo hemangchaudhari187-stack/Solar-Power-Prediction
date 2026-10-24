@@ -116,14 +116,56 @@ st.markdown("""
         margin-top: 5px;
     }
 
-    .small-note {
-        color: #687D71;
-        font-size: 0.88rem;
-    }
+   .small-note {
+    color: #687D71;
+    font-size: 0.88rem;
+}
 
     #MainMenu, footer {
         visibility: hidden;
     }
+    
+/* Improve sidebar text visibility */
+[data-testid="stSidebar"] {
+    color: #173B2B !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"],
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] label p,
+[data-testid="stSidebar"] small {
+    color: #173B2B !important;
+}
+
+/* Make navigation options readable */
+[data-testid="stSidebar"] [role="radiogroup"] label,
+[data-testid="stSidebar"] [role="radiogroup"] label * {
+    color: #173B2B !important;
+}
+
+/* Make metric labels readable */
+div[data-testid="stMetricLabel"],
+div[data-testid="stMetricLabel"] * {
+    color: #587064 !important;
+}
+
+/* Keep primary buttons green */
+.stApp button[kind="primary"],
+.stApp [data-testid="stFormSubmitButton"] button {
+    background-color: #16845B !important;
+    color: #FFFFFF !important;
+    border-color: #16845B !important;
+}
+
+/* Improve secondary text contrast */
+.small-note,
+[data-testid="stCaptionContainer"] {
+    color: #52685B !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
