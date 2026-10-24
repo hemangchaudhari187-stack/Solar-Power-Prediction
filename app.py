@@ -166,6 +166,30 @@ div[data-testid="stMetricLabel"] * {
     color: #52685B !important;
 }
 
+/* Make warning messages easy to read */
+[data-testid="stAlert"] {
+    color: #173B2B !important;
+}
+
+[data-testid="stAlert"] p,
+[data-testid="stAlert"] div {
+    color: #173B2B !important;
+}
+
+/* Improve metric labels such as MAE, RMSE and R² */
+div[data-testid="stMetricLabel"],
+div[data-testid="stMetricLabel"] p,
+div[data-testid="stMetricLabel"] span {
+    color: #52685B !important;
+    opacity: 1 !important;
+}
+
+/* Keep metric values readable without truncating them too much */
+div[data-testid="stMetricValue"] {
+    color: #146C49 !important;
+}
+
+
 </style>
 """, unsafe_allow_html=True)
 
