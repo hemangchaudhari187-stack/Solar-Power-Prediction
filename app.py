@@ -408,6 +408,12 @@ if page == "Dashboard":
             x=1
         )
     )
+    fig.update_layout(
+    template="plotly_white",
+    paper_bgcolor="#F7F9F7",
+    plot_bgcolor="#FFFFFF",
+    font=dict(color="#243D30")
+)
 
     st.plotly_chart(fig, width="stretch")
 
