@@ -25,40 +25,59 @@ st.markdown("""
 <style>
     .stApp {
         background-color: #F7F9F7;
+        color: #243D30;
     }
 
     [data-testid="stSidebar"] {
         background-color: #EAF1EC;
         border-right: 1px solid #DCE7DF;
+        color: #173B2B;
     }
 
     [data-testid="stSidebar"] h1 {
-        color: #146C49;
+        color: #146C49 !important;
         font-size: 1.8rem;
     }
 
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] label *,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
+        color: #173B2B !important;
+    }
+
+    /* Green hero banner: white heading and subtitle */
     .hero {
         background: linear-gradient(120deg, #125C40, #21865D);
         padding: 30px 32px;
         border-radius: 18px;
-        color: white;
         margin-bottom: 25px;
     }
 
-    .hero h1 {
-        color: white;
-        font-size: 2.2rem;
-        margin: 0 0 8px 0;
+    .stApp .hero,
+    .stApp .hero h1,
+    .stApp .hero h2,
+    .stApp .hero h3,
+    .stApp .hero p,
+    .stApp .hero * {
+        color: #FFFFFF !important;
+        opacity: 1 !important;
     }
 
-    .hero p {
-        color: #E1F3E8;
+    .stApp .hero p {
+        color: #EAF7EF !important;
         margin: 0;
         font-size: 1rem;
     }
 
+    .stApp .hero h1 {
+        font-size: 2.2rem;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+    }
+
     .section-title {
-        color: #173B2B;
+        color: #173B2B !important;
         font-size: 1.35rem;
         font-weight: 700;
         margin-top: 12px;
@@ -68,34 +87,38 @@ st.markdown("""
     div[data-testid="stMetric"] {
         background: #FFFFFF;
         border: 1px solid #DCE7DF;
-        padding: 20px 20px;
+        padding: 20px;
         border-radius: 14px;
         box-shadow: 0 2px 8px rgba(20, 65, 42, 0.04);
     }
 
-    div[data-testid="stMetricLabel"] {
-        color: #587064;
+    div[data-testid="stMetricLabel"],
+    div[data-testid="stMetricLabel"] * {
+        color: #52685B !important;
+        opacity: 1 !important;
     }
 
-    div[data-testid="stMetricValue"] {
-        color: #146C49;
+    div[data-testid="stMetricValue"],
+    div[data-testid="stMetricValue"] * {
+        color: #146C49 !important;
         font-weight: 700;
+        opacity: 1 !important;
     }
 
-    div.stButton > button[kind="primary"],
-    div.stFormSubmitButton > button[kind="primary"] {
-        background-color: #16845B;
-        border: none;
+    .stApp button[kind="primary"],
+    .stApp [data-testid="stFormSubmitButton"] button {
+        background-color: #16845B !important;
+        color: #FFFFFF !important;
+        border: 1px solid #16845B !important;
         border-radius: 9px;
-        color: white;
         font-weight: 600;
         padding: 0.55rem 1.3rem;
     }
 
-    div.stButton > button[kind="primary"]:hover,
-    div.stFormSubmitButton > button[kind="primary"]:hover {
-        background-color: #116744;
-        color: white;
+    .stApp button[kind="primary"]:hover,
+    .stApp [data-testid="stFormSubmitButton"] button:hover {
+        background-color: #116744 !important;
+        color: #FFFFFF !important;
     }
 
     .result-card {
@@ -107,148 +130,87 @@ st.markdown("""
     }
 
     .result-label {
-        color: #416653;
+        color: #416653 !important;
         font-size: 1rem;
     }
 
     .result-value {
-        color: #126842;
+        color: #126842 !important;
         font-size: 2.5rem;
         font-weight: 750;
         margin-top: 5px;
     }
 
-   .small-note {
-    color: #687D71;
-    font-size: 0.88rem;
-}
+    .small-note {
+        color: #52685B !important;
+        font-size: 0.88rem;
+    }
+
+    /* Main-page text and headings */
+    [data-testid="stAppViewContainer"] .stMarkdown,
+    [data-testid="stAppViewContainer"] .stMarkdown p,
+    [data-testid="stAppViewContainer"] .stMarkdown li,
+    [data-testid="stAppViewContainer"] .stMarkdown strong,
+    [data-testid="stAppViewContainer"] [data-testid="stHeading"],
+    [data-testid="stAppViewContainer"] [data-testid="stHeading"] * {
+        color: #243D30;
+        opacity: 1;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"],
+    [data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"] *,
+    [data-testid="stAppViewContainer"] label,
+    [data-testid="stAppViewContainer"] label p {
+        color: #243D30 !important;
+        opacity: 1 !important;
+    }
+
+    [data-testid="stAlert"],
+    [data-testid="stAlert"] p,
+    [data-testid="stAlert"] div {
+        color: #173B2B !important;
+        opacity: 1 !important;
+    }
 
     #MainMenu, footer {
         visibility: hidden;
     }
-    
-/* Improve sidebar text visibility */
-[data-testid="stSidebar"] {
-    color: #173B2B !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
-[data-testid="stSidebar"] [data-testid="stWidgetLabel"],
-[data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] label p,
-[data-testid="stSidebar"] small {
-    color: #173B2B !important;
-}
-
-/* Make navigation options readable */
-[data-testid="stSidebar"] [role="radiogroup"] label,
-[data-testid="stSidebar"] [role="radiogroup"] label * {
-    color: #173B2B !important;
-}
-
-/* Make metric labels readable */
-div[data-testid="stMetricLabel"],
-div[data-testid="stMetricLabel"] * {
-    color: #587064 !important;
-}
-
-/* Keep primary buttons green */
-.stApp button[kind="primary"],
-.stApp [data-testid="stFormSubmitButton"] button {
-    background-color: #16845B !important;
-    color: #FFFFFF !important;
-    border-color: #16845B !important;
-}
-
-/* Improve secondary text contrast */
-.small-note,
-[data-testid="stCaptionContainer"] {
-    color: #52685B !important;
-}
-
-/* Make warning messages easy to read */
-[data-testid="stAlert"] {
-    color: #173B2B !important;
-}
-
-[data-testid="stAlert"] p,
-[data-testid="stAlert"] div {
-    color: #173B2B !important;
-}
-
-/* Improve metric labels such as MAE, RMSE and R² */
-div[data-testid="stMetricLabel"],
-div[data-testid="stMetricLabel"] p,
-div[data-testid="stMetricLabel"] span {
-    color: #52685B !important;
-    opacity: 1 !important;
-}
-
-/* Keep metric values readable without truncating them too much */
-div[data-testid="stMetricValue"] {
-    color: #146C49 !important;
-}
-
-/* Fix faint text throughout the main content */
-[data-testid="stAppViewContainer"] .stMarkdown,
-[data-testid="stAppViewContainer"] .stMarkdown p,
-[data-testid="stAppViewContainer"] .stMarkdown li,
-[data-testid="stAppViewContainer"] .stMarkdown strong,
-[data-testid="stAppViewContainer"] .stMarkdown h1,
-[data-testid="stAppViewContainer"] .stMarkdown h2,
-[data-testid="stAppViewContainer"] .stMarkdown h3 {
-    color: #243D30 !important;
-    opacity: 1 !important;
-}
-
-/* Fix labels and helper text inside input forms */
-[data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"],
-[data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"] *,
-[data-testid="stAppViewContainer"] label,
-[data-testid="stAppViewContainer"] label p {
-    color: #243D30 !important;
-    opacity: 1 !important;
-}
-
-/* Ensure About-page lists are readable */
-[data-testid="stAppViewContainer"] ul,
-[data-testid="stAppViewContainer"] ol {
-    color: #243D30 !important;
-}
-
-/* Keep secondary text readable */
-[data-testid="stAppViewContainer"] [data-testid="stCaptionContainer"] {
-    color: #52685B !important;
-    opacity: 1 !important;
-}
-
-/* Fix headings rendered by Streamlit */
-[data-testid="stHeading"],
-[data-testid="stHeading"] *,
-.stApp h1,
-.stApp h2,
-.stApp h3 {
-    color: #173B2B !important;
-    opacity: 1 !important;
-}
-
-/* Keep headings inside bordered cards visible */
-[data-testid="stVerticalBlockBorderWrapper"] h1,
-[data-testid="stVerticalBlockBorderWrapper"] h2,
-[data-testid="stVerticalBlockBorderWrapper"] h3 {
-    color: #173B2B !important;
-}
-
-/* Consistent light background for chart containers */
-[data-testid="stPlotlyChart"] {
-    background-color: #F7F9F7 !important;
-}
-
-
 </style>
 """, unsafe_allow_html=True)
+
+# --------------------------------------------------
+# CONSISTENT LIGHT THEME FOR ALL PLOTLY CHARTS
+# --------------------------------------------------
+def style_plotly_chart(fig):
+    """Apply readable text and a light background to a Plotly figure."""
+    fig.update_layout(
+        template="plotly_white",
+        paper_bgcolor="#F7F9F7",
+        plot_bgcolor="#FFFFFF",
+        font=dict(family="Arial, sans-serif", size=13, color="#243D30"),
+        title_font=dict(color="#173B2B", size=17),
+        legend=dict(
+            font=dict(color="#243D30", size=12),
+            bgcolor="rgba(255,255,255,0)"
+        ),
+        margin=dict(l=20, r=20, t=55, b=25)
+    )
+    fig.update_xaxes(
+        title_font=dict(color="#243D30", size=14),
+        tickfont=dict(color="#243D30", size=12),
+        gridcolor="#E1E8E3",
+        zerolinecolor="#CBD8CF",
+        linecolor="#CBD8CF"
+    )
+    fig.update_yaxes(
+        title_font=dict(color="#243D30", size=14),
+        tickfont=dict(color="#243D30", size=12),
+        gridcolor="#E1E8E3",
+        zerolinecolor="#CBD8CF",
+        linecolor="#CBD8CF"
+    )
+    return fig
+
 
 # --------------------------------------------------
 # LOAD MODEL AND DATA
@@ -394,9 +356,7 @@ if page == "Dashboard":
     ))
 
     fig.update_layout(
-        template="plotly_white",
         height=390,
-        margin=dict(l=15, r=15, t=25, b=15),
         xaxis_title="Test Observation",
         yaxis_title="AC Power (dataset units)",
         hovermode="x unified",
@@ -408,12 +368,7 @@ if page == "Dashboard":
             x=1
         )
     )
-    fig.update_layout(
-    template="plotly_white",
-    paper_bgcolor="#F7F9F7",
-    plot_bgcolor="#FFFFFF",
-    font=dict(color="#243D30")
-)
+    style_plotly_chart(fig)
 
     st.plotly_chart(fig, width="stretch")
 
@@ -576,7 +531,8 @@ elif page == "Model Performance":
             showlegend=False,
             yaxis_title="MAE (target units)"
         )
-        st.plotly_chart(fig_mae, width="stretch")
+        style_plotly_chart(fig_mae)
+    st.plotly_chart(fig_mae, width="stretch")
 
     with col2:
         fig_rmse = px.bar(
@@ -593,7 +549,8 @@ elif page == "Model Performance":
             showlegend=False,
             yaxis_title="RMSE (target units)"
         )
-        st.plotly_chart(fig_rmse, width="stretch")
+        style_plotly_chart(fig_rmse)
+    st.plotly_chart(fig_rmse, width="stretch")
 
     fig_r2 = px.bar(
         metrics,
@@ -609,6 +566,7 @@ elif page == "Model Performance":
         showlegend=False,
         yaxis_title="R²"
     )
+    style_plotly_chart(fig_r2)
     st.plotly_chart(fig_r2, width="stretch")
 
     st.markdown(
@@ -635,6 +593,7 @@ elif page == "Model Performance":
         xaxis_title="Prediction Error (target units)",
         yaxis_title="Number of observations"
     )
+    style_plotly_chart(fig_error)
     st.plotly_chart(fig_error, width="stretch")
 
     st.caption(
