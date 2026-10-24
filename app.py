@@ -189,6 +189,39 @@ div[data-testid="stMetricValue"] {
     color: #146C49 !important;
 }
 
+/* Fix faint text throughout the main content */
+[data-testid="stAppViewContainer"] .stMarkdown,
+[data-testid="stAppViewContainer"] .stMarkdown p,
+[data-testid="stAppViewContainer"] .stMarkdown li,
+[data-testid="stAppViewContainer"] .stMarkdown strong,
+[data-testid="stAppViewContainer"] .stMarkdown h1,
+[data-testid="stAppViewContainer"] .stMarkdown h2,
+[data-testid="stAppViewContainer"] .stMarkdown h3 {
+    color: #243D30 !important;
+    opacity: 1 !important;
+}
+
+/* Fix labels and helper text inside input forms */
+[data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"],
+[data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"] *,
+[data-testid="stAppViewContainer"] label,
+[data-testid="stAppViewContainer"] label p {
+    color: #243D30 !important;
+    opacity: 1 !important;
+}
+
+/* Ensure About-page lists are readable */
+[data-testid="stAppViewContainer"] ul,
+[data-testid="stAppViewContainer"] ol {
+    color: #243D30 !important;
+}
+
+/* Keep secondary text readable */
+[data-testid="stAppViewContainer"] [data-testid="stCaptionContainer"] {
+    color: #52685B !important;
+    opacity: 1 !important;
+}
+
 
 </style>
 """, unsafe_allow_html=True)
