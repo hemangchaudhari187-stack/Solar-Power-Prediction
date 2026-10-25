@@ -78,26 +78,22 @@ st.markdown("""
 }
 
 .hero {
-    background: linear-gradient(
-        120deg,
-        #10563D 0%,
-        #147A52 58%,
-        #27966A 100%
-    );
-    padding: 2rem 2.1rem;
-    border-radius: 20px;
-    margin: 0.2rem 0 1.65rem 0;
-    box-shadow: 0 10px 28px rgba(16, 86, 61, 0.12);
+    background: #F5F8F5;
+    padding: 0.65rem 0.15rem 0.9rem 0.15rem;
+    border-radius: 0;
+    margin: 0.05rem 0 0.75rem 0;
+    box-shadow: none;
+    border-bottom: 1px solid #DDE8E0;
 }
 
 .hero,
 .hero * {
-    color: #FFFFFF !important;
+    color: #20382D !important;
     opacity: 1 !important;
 }
 
 .hero h1 {
-    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    font-size: clamp(1.45rem, 2.2vw, 1.9rem);
     letter-spacing: -0.045em;
     line-height: 1.15;
     margin: 0 0 0.65rem 0;
@@ -105,7 +101,7 @@ st.markdown("""
 }
 
 .hero p {
-    color: #E8F5ED !important;
+    color: #607568 !important;
     font-size: 1rem;
     line-height: 1.6;
     margin: 0;
@@ -113,7 +109,7 @@ st.markdown("""
 }
 
 .eyebrow {
-    color: #D2EBDD !important;
+    color: #147A52 !important;
     font-size: 0.74rem;
     letter-spacing: 0.12em;
     font-weight: 700;
@@ -283,8 +279,8 @@ footer {
 
 @media (max-width: 768px) {
     .hero {
-        padding: 1.35rem;
-        border-radius: 15px;
+        padding: 0.6rem 0.1rem;
+        border-radius: 0;
     }
 
     .hero h1 {
@@ -476,6 +472,34 @@ model_colors = {
     "Linear Regression": "#E5A23B",
 }
 
+if "page" not in st.session_state:
+    st.session_state.page = "Dashboard"
+
+
+def download_dataframe_button(df, label, file_name):
+    csv_data = df.to_csv(index=False)
+    return st.download_button(
+        label=label,
+        data=csv_data,
+        file_name=file_name,
+        mime="text/csv",
+    )
+
+
+def build_prediction_frame(ambient, module, irradiation):
+    df = pd.DataFrame(
+        [{
+            "AMBIENT_TEMPERATURE": ambient,
+            "MODULE_TEMPERATURE": module,
+            "IRRADIATION": irradiation,
+        }]
+    )
+    return df[["AMBIENT_TEMPERATURE", "MODULE_TEMPERATURE", "IRRADIATION"]]
+
+
+def navigate_to_prediction():
+    st.session_state["page"] = "Predict Power"
+
 
 # ============================================================
 # SIDEBAR NAVIGATION
@@ -492,8 +516,10 @@ with st.sidebar:
             "Dashboard",
             "Predict Power",
             "Model Performance",
+            "Accuracy & errors",
             "About",
         ],
+        key="page",
         label_visibility="visible",
     )
 
@@ -525,106 +551,146 @@ with st.sidebar:
 if page == "Dashboard":
 
     show_header(
-        "Solar Power Analytics",
-        "Understand model performance and estimate solar plant AC "
-        "power from weather measurements.",
+        "A clearer view of solar performance.",
+        "Monitor the trained solar-power model, review test-set results, and estimate AC power from weather conditions.",
+    )
+
+    st.button(
+        "Predict AC power",
+        key="dashboard_predict_button",
+        on_click=navigate_to_prediction,
     )
 
     section_title(
         "Performance overview",
-        "A quick view of the model evaluation results.",
+        "A quick view of the model evaluation results from the saved analytics files.",
     )
 
-    col1, col2, col3 = st.columns(3)
+    daily_energy = float(comparison["Actual_AC_Power"].sum())
+    predicted_daily_energy = float(comparison["Predicted_AC_Power"].sum())
 
-    with col1:
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
         st.metric(
-            "Best performing model",
-            str(best_row["Model"]),
-            help="Model with the lowest RMSE in the comparison table.",
+            "Daily AC energy",
+            f"{daily_energy:,.1f}",
+            help="Total AC power across the available test-set observations.",
         )
 
-    with col2:
+    with c2:
         st.metric(
-            "Lowest RMSE",
-            f'{best_row["RMSE"]:.3f}',
-            help="Lower RMSE generally indicates smaller prediction errors.",
+            "Predicted daily energy",
+            f"{predicted_daily_energy:,.1f}",
+            help="Total predicted AC power across the same observations.",
         )
 
-    with col3:
+    with c3:
         st.metric(
-            "Best R² score",
+            "Test-set R²",
             f'{best_row["R2"]:.4f}',
-            help="R² describes how well the model explains variation "
-                 "in the test data.",
+            help="R² describes how well the model explains variation in the test data.",
         )
 
-    section_title(
-        "Actual vs predicted power",
-        "Chronological test-set observations from the saved prediction results.",
-    )
-
-    sample = comparison.head(500).copy()
-    sample["Observation"] = np.arange(1, len(sample) + 1)
-
-    fig = go.Figure()
-
-    fig.add_trace(
-        go.Scatter(
-            x=sample["Observation"],
-            y=sample["Actual_AC_Power"],
-            mode="lines",
-            name="Actual",
-            line=dict(color="#176B4D", width=2),
+    with c4:
+        st.metric(
+            "MAE",
+            f'{best_row["MAE"]:.3f}',
+            help="Mean absolute error in the target units of the dataset.",
         )
-    )
 
-    fig.add_trace(
-        go.Scatter(
-            x=sample["Observation"],
-            y=sample["Predicted_AC_Power"],
-            mode="lines",
-            name="Predicted",
-            line=dict(color="#E5A23B", width=2),
-        )
-    )
-
-    fig.update_layout(
-        xaxis_title="Test observation",
-        yaxis_title="AC power (dataset units)",
-        hovermode="x unified",
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1,
-        ),
-    )
-
-    style_plotly_chart(fig, height=390)
-
-    st.plotly_chart(fig, width="stretch")
-
-    left, right = st.columns([1.2, 1])
+    left, right = st.columns([1.7, 1])
 
     with left:
-        section_title("How to use Solar AI")
-
-        st.markdown(
-            "1. Open **Predict Power**.\n"
-            "2. Enter ambient temperature, module temperature, "
-            "and irradiation.\n"
-            "3. Select **Predict Solar Power** to see the model estimate."
+        section_title(
+            "Actual vs predicted power",
+            "Chronological test-set observations from the saved prediction results.",
         )
+
+        sample = comparison.head(500).copy()
+        sample["Observation"] = np.arange(1, len(sample) + 1)
+
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=sample["Observation"],
+                y=sample["Actual_AC_Power"],
+                mode="lines",
+                name="Actual",
+                line=dict(color="#176B4D", width=2),
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=sample["Observation"],
+                y=sample["Predicted_AC_Power"],
+                mode="lines",
+                name="Predicted",
+                line=dict(color="#E5A23B", width=2),
+            )
+        )
+        fig.update_layout(
+            xaxis_title="Test observation",
+            yaxis_title="AC power (dataset units)",
+            hovermode="x unified",
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+            ),
+        )
+        style_plotly_chart(fig, height=390)
+        st.plotly_chart(fig, width="stretch")
 
     with right:
-        st.info(
-            "**Model limitation**\n\n"
-            "This app estimates AC power from the weather measurements "
-            "you enter. It does not forecast future weather or guarantee "
-            "actual plant output."
+        section_title("Solar plant conditions")
+        with st.container(border=True):
+            st.markdown(
+                "<div class='mini-card'>"
+                "<h4>Illustrative demo conditions</h4>"
+                "<p>These values are not live plant telemetry; they are shown to demonstrate the dashboard layout and reading format.</p>"
+                "</div>",
+                unsafe_allow_html=True,
+            )
+            st.metric("Ambient temperature", "24.8 °C")
+            st.metric("Module temperature", "31.3 °C")
+            st.metric("Irradiation", "0.77")
+            st.caption("Demo values only — no live facility telemetry is available in this project.")
+
+    lower_left, lower_right = st.columns(2)
+
+    with lower_left:
+        section_title("Recent readings")
+        st.dataframe(
+            comparison.head(10)[["Actual_AC_Power", "Predicted_AC_Power"]].rename(
+                columns={
+                    "Actual_AC_Power": "Actual AC power",
+                    "Predicted_AC_Power": "Predicted AC power",
+                }
+            ),
+            hide_index=True,
+            use_container_width=True,
         )
+
+    with lower_right:
+        section_title("Model insight")
+        with st.container(border=True):
+            st.markdown(
+                f"<div class='mini-card'>"
+                f"<h4>{best_row['Model']} leads</h4>"
+                f"<p>Lowest RMSE: <strong>{best_row['RMSE']:.3f}</strong><br>"
+                f"R²: <strong>{best_row['R2']:.4f}</strong><br>"
+                f"MAE: <strong>{best_row['MAE']:.3f}</strong></p>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+            st.caption("Model comparison values are read from model_comparison.csv and update with the saved analytics file.")
+
+    st.info(
+        "This app estimates AC power from weather measurements. It does not forecast future weather or guarantee real plant output."
+    )
 
 
 # ============================================================
@@ -633,150 +699,136 @@ if page == "Dashboard":
 elif page == "Predict Power":
 
     show_header(
-        "Solar Power Predictor",
-        "Enter environmental conditions to estimate solar plant AC "
-        "power using the trained XGBoost model.",
+        "Turn weather into a power estimate.",
+        "Use the trained model to estimate AC power from ambient temperature, module temperature, and irradiation.",
     )
 
-    section_title(
-        "Weather input parameters",
-        "Enter values within the ranges below, then run the prediction.",
-    )
+    prediction_defaults = {
+        "prediction_ambient": 25.0,
+        "prediction_module": 30.0,
+        "prediction_irradiation": 0.5,
+    }
+    for key, value in prediction_defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
 
-    with st.container(border=True):
+    def load_prediction_example():
+        st.session_state["prediction_ambient"] = 25.0
+        st.session_state["prediction_module"] = 31.0
+        st.session_state["prediction_irradiation"] = 0.75
 
-        with st.form("prediction_form"):
+    left, right = st.columns([1.15, 1.1])
 
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-                ambient = st.number_input(
-                    "Ambient temperature (°C)",
-                    min_value=-10.0,
-                    max_value=60.0,
-                    value=25.0,
-                    step=1.0,
-                    help="Temperature of the surrounding air.",
-                )
-
-            with col2:
-                module = st.number_input(
-                    "Module temperature (°C)",
-                    min_value=-10.0,
-                    max_value=100.0,
-                    value=30.0,
-                    step=1.0,
-                    help="Temperature of the solar module surface.",
-                )
-
-            with col3:
-                irradiation = st.number_input(
-                    "Solar irradiation (dataset units)",
-                    min_value=0.0,
-                    max_value=2.0,
-                    value=0.5,
-                    step=0.05,
-                    format="%.4f",
-                    help="Use the same irradiation scale as the training dataset.",
-                )
-
-            submitted = st.form_submit_button(
-                "☀️ Predict Solar Power",
-                type="primary",
-                width="stretch",
-            )
-
-    if submitted:
-
-        input_df = pd.DataFrame(
-            [{
-                "AMBIENT_TEMPERATURE": ambient,
-                "MODULE_TEMPERATURE": module,
-                "IRRADIATION": irradiation,
-            }]
+    with left:
+        section_title(
+            "Weather input parameters",
+            "Enter values within the ranges below, then run the prediction.",
         )
 
-        # Preserve feature names and order used by the trained model.
-        input_df = input_df[
-            [
-                "AMBIENT_TEMPERATURE",
-                "MODULE_TEMPERATURE",
-                "IRRADIATION",
-            ]
-        ]
+        with st.container(border=True):
+            with st.form("prediction_form"):
+                col1, col2, col3 = st.columns(3)
 
-        try:
-            prediction = max(
-                0.0,
-                float(model.predict(input_df)[0]),
+                with col1:
+                    ambient = st.number_input(
+                        "AMBIENT_TEMPERATURE",
+                        min_value=-10.0,
+                        max_value=60.0,
+                        step=1.0,
+                        help="Ambient air temperature in °C.",
+                        key="prediction_ambient",
+                    )
+
+                with col2:
+                    module = st.number_input(
+                        "MODULE_TEMPERATURE",
+                        min_value=-10.0,
+                        max_value=100.0,
+                        step=1.0,
+                        help="Solar module temperature in °C.",
+                        key="prediction_module",
+                    )
+
+                with col3:
+                    irradiation = st.number_input(
+                        "IRRADIATION",
+                        min_value=0.0,
+                        max_value=2.0,
+                        step=0.05,
+                        format="%.4f",
+                        help="Irradiation input in the same units used during model training.",
+                        key="prediction_irradiation",
+                    )
+
+                submitted = st.form_submit_button(
+                    "Predict AC power",
+                    type="primary",
+                    use_container_width=True,
+                    key="prediction_submit",
+                )
+
+            st.button(
+                "Load example",
+                use_container_width=True,
+                on_click=load_prediction_example,
+                key="load_prediction_example",
             )
 
+    with right:
+        if submitted:
+            input_df = build_prediction_frame(ambient, module, irradiation)
+            try:
+                prediction = max(0.0, float(model.predict(input_df)[0]))
+                st.markdown(
+                    """
+                    <div class="result-card">
+                        <div class="result-label">Estimated AC power output</div>
+                        <div class="result-value">""" + f"{prediction:,.2f}" + """</div>
+                        <div class="small-note">Prediction in the model's target units; not a guaranteed real-world measurement.</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                st.markdown(
+                    "<div class='mini-card'><h4>Entered conditions</h4><p>Ambient: {0:.1f} °C<br>Module: {1:.1f} °C<br>Irradiation: {2:.4f}</p></div>".format(ambient, module, irradiation),
+                    unsafe_allow_html=True,
+                )
+
+                if irradiation <= 0.001:
+                    st.warning("Irradiation is nearly zero. Actual solar power output would normally also be close to zero; treat the estimate cautiously.")
+
+                if irradiation > 0:
+                    irradiations = np.linspace(max(0.0, irradiation * 0.5), min(1.5, irradiation * 1.5), 25)
+                    what_if = []
+                    for value in irradiations:
+                        what_if.append(float(model.predict(build_prediction_frame(ambient, module, value))[0]))
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(x=irradiations, y=what_if, mode="lines+markers", name="Predicted AC power", line=dict(color="#147A52", width=3)))
+                    fig.update_layout(
+                        title="How irradiation changes the estimate",
+                        xaxis_title="Irradiation",
+                        yaxis_title="Predicted AC power",
+                        template="plotly_white",
+                        margin=dict(l=20, r=20, t=40, b=20),
+                    )
+                    style_plotly_chart(fig, height=260)
+                    st.plotly_chart(fig, use_container_width=True)
+
+                st.caption("The estimate is generated by the saved XGBoost model using the feature order expected during training: AMBIENT_TEMPERATURE, MODULE_TEMPERATURE, IRRADIATION.")
+            except Exception as error:
+                st.error(f"Prediction failed: {error}")
+        else:
             st.markdown(
-                f"""
-                <div class="result-card">
-                    <div class="result-label">
-                        Estimated AC power output
-                    </div>
-                    <div class="result-value">
-                        {prediction:,.2f}
-                    </div>
-                    <div class="small-note">
-                        Prediction in the model's target units;
-                        not a guaranteed real-world measurement.
-                    </div>
+                """
+                <div class="mini-card">
+                    <h4>Prediction workflow</h4>
+                    <p>Enter three weather conditions and submit the form. The model will estimate AC power using the same features used during training.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-
-            section_title("Conditions used for this estimate")
-
-            a, b, c = st.columns(3)
-
-            a.metric(
-                "Ambient temperature",
-                f"{ambient:.1f} °C",
-            )
-
-            b.metric(
-                "Module temperature",
-                f"{module:.1f} °C",
-            )
-
-            c.metric(
-                "Irradiation",
-                f"{irradiation:.4f}",
-            )
-
-            if irradiation <= 0.001:
-                st.warning(
-                    "Irradiation is nearly zero. Actual solar power "
-                    "output would normally also be close to zero. "
-                    "Treat the model estimate cautiously."
-                )
-
-            st.caption(
-                "This estimate is generated by the saved XGBoost model "
-                "using the values entered above."
-            )
-
-        except Exception as error:
-            st.error(f"Prediction failed: {error}")
-
-    else:
-        st.markdown(
-            """
-            <div class="mini-card">
-                <h4>Prediction workflow</h4>
-                <p>
-                    Enter three weather measurements and submit the form.
-                    The saved model will estimate AC power using the
-                    same feature names used during training.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            st.info("Valid inputs: ambient temperature and module temperature in °C; irradiation in the dataset's original units. This model estimates AC power and does not forecast future weather.")
 
 
 # ============================================================
@@ -811,6 +863,7 @@ elif page == "Model Performance":
         hide_index=True,
         width="stretch",
     )
+    download_dataframe_button(display_metrics, "Download model comparison CSV", "model_comparison_export.csv")
 
     col1, col2 = st.columns(2)
 
@@ -943,119 +996,151 @@ elif page == "Model Performance":
 
 
 # ============================================================
-# PAGE 4 — ABOUT
+# PAGE 4 — ACCURACY & ERRORS
+# ============================================================
+elif page == "Accuracy & errors":
+
+    show_header(
+        "Look beyond a single accuracy score",
+        "Inspect the relationship between actual and predicted power, "
+        "understand error distribution, and review the model's limitations.",
+        eyebrow="SOLAR AI · MODEL DIAGNOSTICS",
+    )
+
+    # Use the XGBoost row when available; otherwise use the best-RMSE model.
+    xgb_rows = metrics[metrics["Model"].astype(str).str.contains("xgboost", case=False)]
+    selected_row = xgb_rows.iloc[0] if not xgb_rows.empty else best_row
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Mean absolute error", f'{selected_row["MAE"]:.3f}')
+    c2.metric("Root mean squared error", f'{selected_row["RMSE"]:.3f}')
+    c3.metric("R² score", f'{selected_row["R2"]:.4f}')
+    error_values = comparison["Actual_AC_Power"] - comparison["Predicted_AC_Power"]
+    c4.metric("Mean residual", f'{error_values.mean():.3f}')
+
+    left, right = st.columns(2)
+    with left:
+        section_title("How close are the predictions?", "Points near the diagonal indicate closer agreement.")
+        fig_scatter = px.scatter(
+            comparison,
+            x="Actual_AC_Power",
+            y="Predicted_AC_Power",
+            opacity=0.65,
+            color_discrete_sequence=["#147A52"],
+        )
+        low = float(min(comparison["Actual_AC_Power"].min(), comparison["Predicted_AC_Power"].min()))
+        high = float(max(comparison["Actual_AC_Power"].max(), comparison["Predicted_AC_Power"].max()))
+        fig_scatter.add_trace(go.Scatter(
+            x=[low, high], y=[low, high], mode="lines",
+            name="Perfect prediction", line=dict(color="#E5A23B", dash="dash", width=2)
+        ))
+        fig_scatter.update_layout(
+            xaxis_title="Actual AC power (dataset units)",
+            yaxis_title="Predicted AC power (dataset units)",
+            legend=dict(orientation="h", y=1.02, x=1, xanchor="right"),
+        )
+        style_plotly_chart(fig_scatter, height=360)
+        st.plotly_chart(fig_scatter, width="stretch")
+
+    with right:
+        section_title("Where do the errors fall?", "Residual = actual power − predicted power.")
+        if error_values.empty:
+            st.warning("No valid prediction errors are available.")
+        else:
+            lo, hi = float(error_values.quantile(0.01)), float(error_values.quantile(0.99))
+            visible = error_values[(error_values >= lo) & (error_values <= hi)]
+            fig_hist = px.histogram(
+                x=visible, nbins=45,
+                color_discrete_sequence=["#147A52"],
+            )
+            fig_hist.add_vline(x=0, line_dash="dash", line_color="#E5A23B")
+            fig_hist.update_layout(
+                xaxis_title="Actual − predicted (target units)",
+                yaxis_title="Number of observations",
+                showlegend=False,
+            )
+            style_plotly_chart(fig_hist, height=360)
+            st.plotly_chart(fig_hist, width="stretch")
+            st.caption(f"Showing central 98% of errors ({len(visible):,} of {len(error_values):,}); extreme values are hidden from this chart only.")
+
+    error_records = comparison[["Actual_AC_Power", "Predicted_AC_Power"]].copy()
+    error_records["Residual"] = error_records["Actual_AC_Power"] - error_records["Predicted_AC_Power"]
+    download_dataframe_button(error_records, "Download error records CSV", "solar_power_error_records.csv")
+
+    section_title("What to take away")
+    st.markdown(
+        "- **MAE** gives the average absolute prediction error in the target units.\\n"
+        "- **RMSE** penalizes larger errors more heavily.\\n"
+        "- **R²** measures how much variation is explained by the model; it is not a guarantee of real-world accuracy.\\n"
+        "- Results depend on the quality and range of the historical data used to train and evaluate the model."
+    )
+    st.info("Use these diagnostics as a model-evaluation aid. Validate predictions on independent, representative data before operational use.")
+
+
+# ============================================================
+# PAGE 5 — ABOUT
 # ============================================================
 elif page == "About":
 
     show_header(
-        "About Solar AI",
-        "A machine-learning project for solar generation analytics, "
-        "built to explore how weather conditions relate to estimated "
-        "AC power output.",
+        "Built to explain. Designed to be questioned.",
+        "This project packages a trained solar-power model, evaluation metrics, and interactive diagnostics into a compact analytics dashboard.",
+    )
+
+    st.markdown(
+        "<div style='background:#EAF2EC;border:1px solid #DDE8E0;border-radius:16px;padding:1.2rem 1.3rem;margin:0 0 1.2rem 0;'>"
+        "<strong style='color:#10563D'>Project purpose</strong><br>"
+        "<span style='color:#20382D'>Solar AI estimates AC power from the weather measurements entered into the app. It is a model-exploration and evaluation interface, not a weather forecasting system.</span>"
+        "</div>",
+        unsafe_allow_html=True,
     )
 
     section_title("Project overview")
-
-    st.write(
-        "Solar AI uses historical solar generation and weather "
-        "measurements to estimate AC power output from selected "
-        "environmental conditions. The app presents a trained XGBoost "
-        "model alongside a comparison of three machine-learning approaches."
-    )
 
     left, right = st.columns(2)
 
     with left:
         with st.container(border=True):
-            st.subheader("🌤️ Input features")
-
+            st.subheader("🌤️ Input features and dataset coverage")
             st.markdown(
                 "- Ambient temperature\n"
                 "- Solar module temperature\n"
-                "- Solar irradiation"
+                "- Solar irradiation\n\n"
+                "The app uses the same feature names and order as the trained XGBoost model. Feature values should be in the format used during training and evaluation."
             )
 
     with right:
         with st.container(border=True):
-            st.subheader("🤖 Models evaluated")
-
+            st.subheader("🤖 Model and evaluation scope")
             st.markdown(
                 "- Linear Regression\n"
                 "- Random Forest\n"
-                "- XGBoost"
+                "- XGBoost\n\n"
+                "The dashboard compares model quality using MAE, RMSE, and R² on the same evaluation set."
             )
 
-    section_title("How the prediction works")
-
-    step1, step2, step3 = st.columns(3)
+    section_title("A simple prediction workflow")
+    step1, step2, step3, step4 = st.columns(4)
 
     with step1:
-        st.markdown(
-            """
-            <div class="mini-card">
-                <h4>01 · Weather inputs</h4>
-                <p>
-                    Provide ambient temperature, module temperature,
-                    and irradiation.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+        st.markdown("<div class='mini-card'><h4>01 · Prepare</h4><p>Collect the weather measurements needed by the model.</p></div>", unsafe_allow_html=True)
     with step2:
-        st.markdown(
-            """
-            <div class="mini-card">
-                <h4>02 · Trained model</h4>
-                <p>
-                    The saved XGBoost model processes the input features.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+        st.markdown("<div class='mini-card'><h4>02 · Split</h4><p>Use the saved evaluation data to compare actual and predicted outputs.</p></div>", unsafe_allow_html=True)
     with step3:
-        st.markdown(
-            """
-            <div class="mini-card">
-                <h4>03 · Power estimate</h4>
-                <p>
-                    The app displays estimated AC power output in the
-                    model's target units.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown("<div class='mini-card'><h4>03 · Train</h4><p>Fit the model on historical examples and preserve the trained artifact.</p></div>", unsafe_allow_html=True)
+    with step4:
+        st.markdown("<div class='mini-card'><h4>04 · Evaluate</h4><p>Review error metrics and residual patterns before drawing conclusions.</p></div>", unsafe_allow_html=True)
 
-    section_title("Evaluation metrics")
-
-    m1, m2, m3 = st.columns(3)
-
-    m1.metric(
-        "MAE",
-        "Mean Absolute Error",
-    )
-
-    m2.metric(
-        "RMSE",
-        "Root Mean Squared Error",
-    )
-
-    m3.metric(
-        "R²",
-        "Coefficient of Determination",
-    )
+    section_title("Technology stack")
+    tech = st.columns(5)
+    labels = ["Python", "Streamlit", "Pandas", "XGBoost", "Plotly"]
+    for col, label in zip(tech, labels):
+        with col:
+            st.markdown(f"<div class='mini-card'><h4>{label}</h4><p>Used in this project.</p></div>", unsafe_allow_html=True)
 
     section_title("Limitations and responsible use")
-
     st.warning(
-        "This project uses a limited historical dataset. Results are "
-        "estimates, not guaranteed real-world output. The dashboard "
-        "does not forecast future weather, and predictions should be "
-        "validated before operational use."
+        "This application estimates AC power from weather measurements entered by the user. It does not forecast future weather or guarantee real-world plant output, and any operational decision should be validated against representative observations."
     )
 
 
